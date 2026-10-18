@@ -1,0 +1,81 @@
+-- โหลด Rayfield UI Library
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "MM2 สคริปต์ภาษาไทย 🔪✨",
+   LoadingTitle = "กำลังโหลดระบบ MM2...",
+   LoadingSubtitle = "เมนูภาษาไทยครบวงจร",
+   ConfigurationSaving = { Enabled = false },
+   Discord = { Enabled = false },
+   KeySystem = false
+})
+
+-- ตัวแปรบริการ Roblox
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+
+-- ตัวแปรการตั้งค่า
+local ESPEnabled = false
+local HitboxEnabled = false
+local HitboxSize = 10
+local WalkSpeedValue = 16
+local JumpPowerValue = 50
+
+-- ฟังก์ชันตรวจสอบบทบาทและคืนค่า (ชื่อภาษาไทย, สี)
+local function GetRoleInfo(player)
+    local roleName = "คนดี"
+    local color = Color3.fromRGB(0, 255, 0) -- สีเขียว
+    
+    local backpack = player:FindFirstChild("Backpack")
+    local character = player.Character
+    
+    local hasGun = (backpack and backpack:FindFirstChild("Gun")) or (character and character:FindFirstChild("Gun"))
+    local hasKnife = (backpack and backpack:FindFirstChild("Knife")) or (character and character:FindFirstChild("Knife"))
+    
+    if hasKnife then
+        roleName = "ไอชั่ว"
+        color = Color3.fromRGB(255, 0, 0) -- สีแดง
+    elseif hasGun then
+        roleName = "ฮีโร่"
+        color = Color3.fromRGB(0, 191, 255) -- สีฟ้า
+    end
+    
+    return roleName, color
+end
+
+-- ==================== ระบบ ESP ====================
+local espBoxes = {}
+
+local function CreateESP(player)
+    if player == LocalPlayer then return end
+    
+    local box = Drawing.new("Square")
+    box.Thickness = 2
+    box.Filled = false
+    box.Transparent = 1
+    box.Visible = false
+    
+    local text = Drawing.new("Text")
+    text.Size = 16
+    text.Center = true
+    text.Outline = true
+    text.Visible = false
+    
+    espBoxes[player] = {Box = box, Text = text}
+end
+
+for _, p in pairs(Players:GetPlayers()) do CreateESP(p) end
+Players.PlayerAdded:Connect(CreateESP)
+Players.PlayerRemoving:Connect(function(p)
+    if espBoxes[p] then
+        espBoxes[p].Box:Remove()
+        espBoxes[p].Text:Remove()
+        espBoxes[p] = nil
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    for player, drawings in pairs(espBoxes) do
+        if ESPEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("
